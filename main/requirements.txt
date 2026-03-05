@@ -4,3 +4,7 @@ pydantic
 python-dotenv
 requests
 python-multipart
+
+sqlalchemy
+psycopg2-binary
+redis
