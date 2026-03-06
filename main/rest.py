@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import uuid
 from pydantic import BaseModel
 
-engine=create_engine("postgresql://agriadmin:agriadmin%40123@localhost:5632/agri_db")
+engine=create_engine("postgresql://agriadmin:agriadmin%40123@db_service:5432/agri_db")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
