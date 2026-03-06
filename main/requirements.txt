@@ -1,10 +1,36 @@
-fastapi
-uvicorn
-pydantic
-python-dotenv
-requests
-python-multipart
+# fastapi
+# uvicorn
+# pydantic
+# python-dotenv
+# requests
+# python-multipart
 
-sqlalchemy
-psycopg2-binary
-redis
+# sqlalchemy
+# psycopg2-binary
+# redis
+
+
+# fastapi-users[sqlalchemy]
+
+# asyncpg
+
+# # Kafka
+# aiokafka
+
+
+# # AI / ML - RAG, Agentic
+# langchain
+# langchain-community
+# langchain-openai
+# langgraph
+# qdrant-client
+# sentence-transformers
+
+
+# # AI / ML - Computer Vision
+# torch
+# torchvision
+# ultralytics
+# roboflow
+# pillow
+# matplotlib
