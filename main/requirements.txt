@@ -1,21 +1,21 @@
-# fastapi
-# uvicorn
-# pydantic
-# python-dotenv
-# requests
-# python-multipart
+fastapi
+uvicorn
+pydantic
+python-dotenv
+requests
+python-multipart
 
-# sqlalchemy
-# psycopg2-binary
-# redis
+sqlalchemy
+psycopg2-binary
+redis
 
 
-# fastapi-users[sqlalchemy]
+fastapi-users[sqlalchemy]
 
-# asyncpg
+asyncpg
 
-# # Kafka
-# aiokafka
+# Kafka
+aiokafka
 
 
 # # AI / ML - RAG, Agentic
