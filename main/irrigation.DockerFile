@@ -5,7 +5,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY irrigation.py .
+COPY processor.py .
+COPY ingestion.py .
 
-EXPOSE 8000
 
-CMD ["uvicorn", "irrigation:app", "--host", "0.0.0.0", "--port", "8000"]
+
+CMD ["python","processor.py"]
