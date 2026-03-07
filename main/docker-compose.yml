@@ -10,7 +10,7 @@ services:
   sensor_gateway:
     build:
       context: .
-      dockerfile: swg.DockerFile
+      dockerfile: sgw.DockerFile
     ports:
       - "8001:8000"
     depends_on:

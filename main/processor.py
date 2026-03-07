@@ -48,7 +48,7 @@ class KafkaEventConsumer:
             sensor_id = Column(String, nullable=False)
             temperature = Column(Float, nullable=False)
 
-        engine = create_engine("postgresql://postgres:password@db:5432/sensor_data")
+        engine = create_engine("postgresql://agriadmin:agriadmin%40123@db_service:5432/agri_db")
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         Base.metadata.create_all(bind=engine)
         session = SessionLocal()
@@ -65,8 +65,9 @@ class KafkaEventConsumer:
         try:
             async for msg in consumer.consumer:
                 event = Event(**msg.value)
-                IrrigationService = IrrigationService()
-                IrrigationService.create_irrigation_data(event)
+                consumer.store_event(event)
+                irrigation_service = IrrigationService()
+                irrigation_service.create_irrigation_data(event)
         
         finally:
             await consumer.stop()
