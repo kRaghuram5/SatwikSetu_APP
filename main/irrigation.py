@@ -18,3 +18,4 @@ class IrrigationService:
             print(f"Irrigation process initiated based on sensor {event.sensor_id} with temperature {event.temperature}", flush=True)
         else:
             print(f"Irrigation process not initiated based on sensor {event.sensor_id} with temperature {event.temperature}", flush=True)
+

@@ -4,8 +4,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY sgw.py .
-COPY ingestion.py .
+COPY main/sgw.py ./sgw.py
+COPY main/ingestion.py ./ingestion.py
 
 EXPOSE 8000
 

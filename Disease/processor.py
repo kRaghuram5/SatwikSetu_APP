@@ -1,0 +1,77 @@
+"""
+Simple Kafka Consumer Utility
+"""
+
+import asyncio
+import json
+
+from pydantic import BaseModel
+from aiokafka import AIOKafkaConsumer
+from ingestion import Event
+from Disease import DiseaseService
+
+from sqlalchemy import create_engine, Column, String, Boolean
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import uuid
+
+KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
+TOPIC_NAME = "disease.events"
+CONSUMER_GROUP = "disease_data_group"
+
+class KafkaEventConsumer:
+    def __init__(self, bootstrap_servers: str = KAFKA_BOOTSTRAP_SERVERS):
+        self.bootstrap_servers = bootstrap_servers
+
+        self.consumer = None
+
+    async def start(self):
+        self.consumer = AIOKafkaConsumer(
+            TOPIC_NAME,
+            bootstrap_servers=self.bootstrap_servers,
+            group_id=CONSUMER_GROUP,
+            value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+            key_deserializer=lambda k: k.decode("utf-8") if k else None,
+            auto_offset_reset="earliest",
+            )
+        await self.consumer.start()
+    
+    async def stop(self):
+        await self.consumer.stop()
+
+    def store_event(self, event: Event):
+        Base = declarative_base()
+        class EventModel(Base):
+            __tablename__ = "disease_events"
+            id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+            image_path = Column(String, nullable=False)
+            prediction_id = Column(String, nullable=False)
+            isDisease = Column(Boolean, nullable=False)
+
+        engine = create_engine("postgresql://agriadmin:agriadmin%40123@db_service:5432/agri_db")
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        Base.metadata.create_all(bind=engine)
+        session = SessionLocal()
+        event_record = EventModel(image_path=event.image_path, prediction_id=event.prediction_id, isDisease=event.isDisease)
+        session.add(event_record)            
+        session.commit()
+        session.close()
+        print(f"Event stored in database: {event.prediction_id}", flush=True)
+        return event
+    
+    async def process_events(self):
+        consumer = KafkaEventConsumer()
+        await consumer.start()
+        try:
+            async for msg in consumer.consumer:
+                event = Event(**msg.value)
+                consumer.store_event(event)
+                disease_service = DiseaseService()
+                disease_service.create_disease_notification(event)
+        
+        finally:
+            await consumer.stop()
+
+if __name__ == "__main__":
+    asyncio.run(KafkaEventConsumer().process_events())

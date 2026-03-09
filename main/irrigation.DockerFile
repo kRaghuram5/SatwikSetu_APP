@@ -4,9 +4,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY irrigation.py .
-COPY processor.py .
-COPY ingestion.py .
+COPY main/irrigation.py ./irrigation.py
+COPY main/processor.py ./processor.py
+COPY main/ingestion.py ./ingestion.py
 
 
 

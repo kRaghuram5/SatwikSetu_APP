@@ -1,29 +1,57 @@
 services:
-  api:
+
+  # ── main services ───────────────────────────────────────────────
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: main/Dockerfile
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - db_service
+
+  # sensor_gateway:
+  #   build:
+  #     context: .
+  #     dockerfile: main/sgw.DockerFile
+  #   ports:
+  #     - "8001:8000"
+  #   depends_on:
+  #     kafka:
+  #       condition: service_healthy
+
+  # irrigation:
+  #   build:
+  #     context: .
+  #     dockerfile: main/irrigation.DockerFile
+  #   depends_on:
+  #     kafka:
+  #       condition: service_healthy
+
+  # ── disease services ─────────────────────────────────────────────
+  upload:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Disease/upload.dockerfile
     ports:
-      - "8000:8000"
-    depends_on:
-      - db_service
-  sensor_gateway:
-    build:
-      context: .
-      dockerfile: sgw.DockerFile
-    ports:
-      - "8001:8000"
-    depends_on:
-      kafka:
-        condition: service_healthy
-  irrigation:
-    build:
-      context: .
-      dockerfile: irrigation.DockerFile
+      - "8002:8000"
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       kafka:
         condition: service_healthy
 
+  disease:
+    build:
+      context: .
+      dockerfile: Disease/disease.dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+      db_service:
+        condition: service_started
+
+  # ── shared infrastructure ─────────────────────────────────────────
   db_service:
     image: postgres:16-alpine
     container_name: agri_postgres
@@ -42,7 +70,6 @@ services:
     container_name: agri-kafka
     restart: unless-stopped
     environment:
-      # KRaft settings
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
@@ -60,7 +87,6 @@ services:
       - "9094:9094"
     volumes:
       - kafka_data:/var/lib/kafka/data
-
     healthcheck:
       test:
         [
@@ -75,3 +101,4 @@ services:
 volumes:
   db_data:
   kafka_data:
+  uploads_data:
