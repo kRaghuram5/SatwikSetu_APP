@@ -14,4 +14,38 @@ Run:
 Test:
     http://localhost:9006/docs
 """
+import json
+import os
+from dotenv import load_dotenv
+from pathlib import Path
 
+load_dotenv(dotenv_path=Path(__file__).parent / '.env')
+KNOWLEDGE_FILE = Path(__file__).parent / 'farming_knowledge_06.json'
+PROMPTS_FILE = Path(__file__).parent / 'prompts.json'
+
+from sentence_transformers import SentenceTransformer
+from qdrant_ingestion import QdrantIngestion
+
+class SimpleVectorStore:
+    def __init__(self, knowledge_path: Path | None = None):
+        self.collection_name = "farming_knowledge"
+        self.ingestion = QdrantIngestion(collection_name=self.collection_name)
+        self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
+        if knowledge_path:
+            self.ingestion.load_and_ingest(knowledge_path, self.encoder)
+
+    def search(self, query: str, n_results: int = 3):
+        query_vector = self.encoder.encode(query).tolist()
+        results = self.ingestion.client.query_points(
+            collection_name = self.collection_name,
+            query = query_vector,
+            limit = n_results,
+        )
+        return [
+            {
+                "content": hit.payload["content"],
+                "metadata": hit.payload["metadata"],
+                "distance": hit.score,
+            }
+            for hit in results.points
+        ]

@@ -36,7 +36,7 @@ class QdrantIngestion:
     def create_client(self) -> QdrantClient:
       
         self._client = QdrantClient(url=self.url)
-        self._client.recreate_collection(
+        self._client.recreate_collection( #only for testing, otherwise use create
             collection_name=self.collection_name,
             vectors_config=VectorParams(
                 size=self.vector_size, distance=Distance.COSINE
