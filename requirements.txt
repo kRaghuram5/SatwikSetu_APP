@@ -25,6 +25,7 @@ aiokafka
 # langgraph
 # qdrant-client
 # sentence-transformers
+# bs4
 
 
 # # AI / ML - Computer Vision
