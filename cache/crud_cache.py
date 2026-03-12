@@ -105,15 +105,14 @@ def update_product(product_id: str, update: ProductUpdate):
     except redis.ConnectionError:
         raise HTTPException(status_code=503,detail="Redis unavailable")
 
-@app.delete("/products/{product_id}", status_code=204)
-def delete_product(product_id: str):
-    key = cache_key(product_id)
+@app.get("/cache/flush")
+def flush_cache():
     try:
-        if redis_client.delete(key) == 0:
-            raise HTTPException(status_code=404, detail="Product not found in cache")
-        logger.info(f"Product deleted from cache with ID: {product_id}")
+        keys=redis_client.keys(f"{CACHE_PREFIX}*")
+        if keys:
+            redis_client.delete(*keys)
+            logger.info("Flushed all cache entries")
+        return {"message":f"flushed{len(keys)} cache entries"}
     except redis.ConnectionError:
-        raise HTTPException(status_code=503,detail="Redis unavailable")
-
-    return None
+        return {"error":"Unable to connect to Redis cache"}
 

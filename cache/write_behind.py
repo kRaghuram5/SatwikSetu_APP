@@ -134,9 +134,10 @@ def startup():
 # --Create --
 
 @app.post("/products/", response_model=ProductResponse, status_code=201)
-def create_product(product: ProductCreate):
+def create_product(product: ProductCreate, background_tasks: BackgroundTasks):
+    # 1. Create product data
     product_id = str(uuid.uuid4())
-    timestamp = datetime.utcnow().isoformat()
+    now = datetime.utcnow().isoformat()
 
     product_data = {
         "id": product_id,
@@ -144,10 +145,11 @@ def create_product(product: ProductCreate):
         "category": product.category,
         "price": product.price,
         "description": product.description,
-        "created_at": timestamp,
-        "updated_at": timestamp,
+        "created_at": now,
+        "updated_at": now,
         "source": "redis_cache"
     }
+    # 2. Cache in Redis
     try:
         redis_client.setex(
             cache_key(product_id),
@@ -157,4 +159,46 @@ def create_product(product: ProductCreate):
         logger.info(f"Product created and cached with ID: {product_id}")
     except redis.ConnectionError:
         raise HTTPException(status_code=503,detail="Redis unavailable")
+    background_tasks.add_task(sync_create_to_db, product_data)
     return product_data
+
+
+@app.get("/products/{product_id}", response_model=ProductResponse)
+def get_product(product_id: str, db: Session = Depends(get_db)):
+    key = cache_key(product_id)
+    try:
+        cached_product = redis_client.get(key)
+        if cached_product:
+            logger.info(f"Cache HIT: {product_id}")
+            return deserialize_product(cached_product)
+    except redis.ConnectionError:
+        pass
+    
+    logger.info(f"Cache MISS: {product_id}")
+    product = db.query(Product).filter(Product.id == uuid.UUID(product_id)).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    try:
+        product_dict = product.to_dict()
+        redis_client.setex(
+            key,
+            CACHE_TTL,
+            serialize_product(product_dict)
+        )
+    except redis.ConnectionError:
+        logger.error(f"Failed to cache product after DB fetch with ID: {product_id}")
+    return product
+
+
+@app.delete("/products/{product_id}", status_code=204)
+def delete_product(product_id: str):
+    key = cache_key(product_id)
+    try:
+        if redis_client.delete(key) == 0:
+            raise HTTPException(status_code=404, detail="Product not found in cache")
+        logger.info(f"Product deleted from cache with ID: {product_id}")
+    except redis.ConnectionError:
+        raise HTTPException(status_code=503,detail="Redis unavailable")
+
+    return None
