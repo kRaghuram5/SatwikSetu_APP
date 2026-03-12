@@ -9,7 +9,6 @@ sqlalchemy
 psycopg2-binary
 redis
 
-
 fastapi-users[sqlalchemy]
 
 asyncpg
