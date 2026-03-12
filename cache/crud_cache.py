@@ -83,3 +83,37 @@ def read_product(product_id: uuid.UUID):
     raise HTTPException(status_code=404, detail="Product not found in cache")
 
 
+@app.put("/products/{product_id}", response_model=ProductResponse)
+def update_product(product_id: str, update: ProductUpdate):
+    key = cache_key(product_id)
+    try:
+        cached = redis.client
+        cached_product = redis_client.get(key)
+        if not cached_product:
+            raise HTTPException(status_code=404, detail="Product not found in cache")
+        current_data = deserialize_product(cached_product)
+        
+        #apply updates
+        update_data = update.model_dump(exclude_unset=True)
+        current_data.update(update_data)
+        current_data["updated_at"] = datetime.utcnow().isoformat()
+
+
+        redis_client.setex(key, CACHE_TTL, serialize_product(current_data))
+        logger.info(f"Product updated in cache with ID: {product_id}")
+        return current_data
+    except redis.ConnectionError:
+        raise HTTPException(status_code=503,detail="Redis unavailable")
+
+@app.delete("/products/{product_id}", status_code=204)
+def delete_product(product_id: str):
+    key = cache_key(product_id)
+    try:
+        if redis_client.delete(key) == 0:
+            raise HTTPException(status_code=404, detail="Product not found in cache")
+        logger.info(f"Product deleted from cache with ID: {product_id}")
+    except redis.ConnectionError:
+        raise HTTPException(status_code=503,detail="Redis unavailable")
+
+    return None
+
