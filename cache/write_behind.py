@@ -11,6 +11,7 @@ import time
 from sqlalchemy import create_engine, Column, String, Float, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, Session
 
 
@@ -75,7 +76,7 @@ REDIS_URL = "redis://localhost:6579/2"
 redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
 
-CACHE_TTL = 300  # 5 minutes
+CACHE_TTL = 30  # 5 minutes
 CACHE_PREFIX = "product_wb"
 
 
@@ -125,6 +126,13 @@ app = FastAPI(
 
 @app.on_event("startup")
 def startup():
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Ensured PostgreSQL tables exist.")
+    except SQLAlchemyError as exc:
+        logger.error(f"Failed to initialize PostgreSQL schema: {exc}")
+        raise
+
     try:
         redis_client.ping()
         logger.info("Connected to Redis successfully.")

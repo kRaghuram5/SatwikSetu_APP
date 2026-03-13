@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 REDIS_URL = "redis://localhost:6579/1"
 redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
-CACHE_TTL = 300  # Cache time-to-live in seconds
+CACHE_TTL = 30  # Cache time-to-live in seconds
 CACHE_PREFIX = "product_cache"  # Prefix for cache keys
 
 def cache_key(product_id: uuid.UUID) -> str:
