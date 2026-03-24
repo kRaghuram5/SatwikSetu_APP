@@ -2,6 +2,27 @@
 
 A comprehensive microservices-based platform for intelligent agricultural advisory, disease detection, irrigation management, and market price tracking.
 
+---
+
+## 🛠️ Tools & Technologies Stack
+
+| Category | Tools |
+|----------|-------|
+| **Backend Framework** | FastAPI, Uvicorn |
+| **Database** | PostgreSQL, SQLAlchemy ORM, Alembic (Migrations) |
+| **Caching & Memory** | Redis |
+| **Message Queue** | Kafka, aiokafka |
+| **AI/ML & RAG** | LangChain, OpenAI, Sentence Transformers, Qdrant (Vector DB) |
+| **Computer Vision** | PyTorch, TorchVision, Pillow, NumPy |
+| **Data Validation** | Pydantic |
+| **Async & HTTP** | asyncpg, httpx |
+| **Authentication** | fastapi-users, JWT |
+| **Containerization** | Docker, Docker Compose |
+| **Reverse Proxy & Load Balancing** | Nginx |
+| **Multi-Channel Notifications** | Email, SMS integrations |
+
+---
+
 ## 📋 Table of Contents
 
 - [Architecture Overview](#architecture-overview)
