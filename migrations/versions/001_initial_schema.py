@@ -19,21 +19,21 @@ depends_on: Union[Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create ENUM types
-    user_role_enum = postgresql.ENUM('farmer', 'agent', 'admin', name='userrole')
-    user_role_enum.create(op.get_bind(), checkfirst=True)
+    # Create ENUM types - using DROP CASCADE to avoid conflicts
+    op.execute("DROP TYPE IF EXISTS userrole CASCADE;")
+    op.execute("CREATE TYPE userrole AS ENUM ('FARMER', 'AGENT', 'ADMIN');")
     
-    growth_stage_enum = postgresql.ENUM('seedling', 'vegetative', 'flowering', 'fruiting', 'maturation', name='growthstage')
-    growth_stage_enum.create(op.get_bind(), checkfirst=True)
+    op.execute("DROP TYPE IF EXISTS growthstage CASCADE;")
+    op.execute("CREATE TYPE growthstage AS ENUM ('SEEDLING', 'VEGETATIVE', 'FLOWERING', 'FRUITING', 'MATURATION');")
     
-    notification_type_enum = postgresql.ENUM('disease_alert', 'advisory', 'price_alert', 'irrigation_reminder', 'system_alert', name='notificationtype')
-    notification_type_enum.create(op.get_bind(), checkfirst=True)
+    op.execute("DROP TYPE IF EXISTS notificationtype CASCADE;")
+    op.execute("CREATE TYPE notificationtype AS ENUM ('DISEASE_ALERT', 'ADVISORY', 'PRICE_ALERT', 'IRRIGATION_REMINDER', 'SYSTEM_ALERT');")
     
-    notification_channel_enum = postgresql.ENUM('email', 'sms', 'in_app', 'push', name='notificationchannel')
-    notification_channel_enum.create(op.get_bind(), checkfirst=True)
+    op.execute("DROP TYPE IF EXISTS notificationchannel CASCADE;")
+    op.execute("CREATE TYPE notificationchannel AS ENUM ('EMAIL', 'SMS', 'IN_APP', 'PUSH');")
     
-    notification_status_enum = postgresql.ENUM('pending', 'sent', 'failed', 'read', name='notificationstatus')
-    notification_status_enum.create(op.get_bind(), checkfirst=True)
+    op.execute("DROP TYPE IF EXISTS notificationstatus CASCADE;")
+    op.execute("CREATE TYPE notificationstatus AS ENUM ('PENDING', 'SENT', 'FAILED', 'READ');")
     
     # Create users table
     op.create_table('users',
@@ -44,8 +44,10 @@ def upgrade() -> None:
         sa.Column('phone', sa.String(length=15), nullable=True),
         sa.Column('state', sa.String(length=50), nullable=True),
         sa.Column('district', sa.String(length=50), nullable=True),
-        sa.Column('role', user_role_enum, nullable=False, server_default='farmer'),
+        sa.Column('role', postgresql.ENUM('FARMER', 'AGENT', 'ADMIN', name='userrole', create_type=False), nullable=False, server_default='FARMER'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
+        sa.Column('is_superuser', sa.Boolean(), nullable=False, server_default='false'),
+        sa.Column('is_verified', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
@@ -116,7 +118,7 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('farm_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('crop', sa.String(length=50), nullable=False),
-        sa.Column('growth_stage', growth_stage_enum, nullable=False),
+        sa.Column('growth_stage', postgresql.ENUM('seedling', 'vegetative', 'flowering', 'fruiting', 'maturation', name='growthstage', create_type=False), nullable=False),
         sa.Column('soil_moisture', sa.Float(), nullable=False),
         sa.Column('temperature', sa.Float(), nullable=False),
         sa.Column('rainfall', sa.Float(), nullable=True),
@@ -157,12 +159,12 @@ def upgrade() -> None:
     op.create_table('notifications',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('farmer_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('notification_type', notification_type_enum, nullable=False),
-        sa.Column('channel', notification_channel_enum, nullable=False),
+        sa.Column('notification_type', postgresql.ENUM('disease_alert', 'advisory', 'price_alert', 'irrigation_reminder', 'system_alert', name='notificationtype', create_type=False), nullable=False),
+        sa.Column('channel', postgresql.ENUM('email', 'sms', 'in_app', 'push', name='notificationchannel', create_type=False), nullable=False),
         sa.Column('title', sa.String(length=200), nullable=False),
         sa.Column('message', sa.Text(), nullable=False),
         sa.Column('reference_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('status', notification_status_enum, nullable=False, server_default='pending'),
+        sa.Column('status', postgresql.ENUM('pending', 'sent', 'failed', 'read', name='notificationstatus', create_type=False), nullable=False, server_default='pending'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.Column('sent_at', sa.DateTime(), nullable=True),
         sa.Column('read_at', sa.DateTime(), nullable=True),
