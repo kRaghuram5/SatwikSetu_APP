@@ -61,6 +61,7 @@ async def detect_disease(
         farmer_id=farmer_id,
         farm_id=farm_id,
         image_path=image_path,
+        image_filename=file.filename,
         disease_detected=result["label"],
         confidence=result["confidence"],
         crop=result["crop"],
