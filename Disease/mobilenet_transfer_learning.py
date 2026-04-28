@@ -9,6 +9,9 @@ Usage:
 
 import os, sys, json, logging
 from pathlib import Path
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
@@ -345,6 +348,8 @@ def evaluate_model():
 
     correct, total = 0, 0
     class_correct, class_total = {}, {}
+    all_labels = []
+    all_preds = []
 
     with torch.no_grad():
         for images, labels in val_loader:
@@ -358,6 +363,8 @@ def evaluate_model():
                 class_total[cls] = class_total.get(cls, 0) + 1
                 if label == pred:
                     class_correct[cls] = class_correct.get(cls, 0) + 1
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(predicted.cpu().numpy())
 
     print(f"\n{'=' * 60}")
     print(f"  EVALUATION RESULTS")
@@ -368,6 +375,15 @@ def evaluate_model():
     for cls in sorted(class_total.keys()):
         acc = class_correct.get(cls, 0) / class_total[cls] * 100
         print(f"  {cls:<35} {acc:>9.1f}% {class_total[cls]:>7}")
+
+    # Confusion matrix visualization
+    cm = confusion_matrix(all_labels, all_preds)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
+    fig, ax = plt.subplots(figsize=(10, 10))
+    disp.plot(ax=ax, xticks_rotation=45, cmap='Blues')
+    plt.title('Confusion Matrix')
+    plt.tight_layout()
+    plt.show()
 
 
 

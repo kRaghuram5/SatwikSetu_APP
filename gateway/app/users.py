@@ -24,7 +24,7 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
     phone: Optional[str] = None
     state: Optional[str] = None
     district: Optional[str] = None
-    role: UserRole = UserRole.FARMER
+    role: UserRole = UserRole.farmer
 
 
 class UserCreate(schemas.BaseUserCreate):
@@ -32,7 +32,7 @@ class UserCreate(schemas.BaseUserCreate):
     phone: Optional[str] = None
     state: Optional[str] = None
     district: Optional[str] = None
-    role: UserRole = UserRole.FARMER
+    role: UserRole = UserRole.farmer
 
 
 class UserUpdate(schemas.BaseUserUpdate):

@@ -14,9 +14,9 @@ from shared.database import Base
 
 
 class UserRole(str, enum.Enum):
-    FARMER = "FARMER"
-    AGENT  = "AGENT"
-    ADMIN  = "ADMIN"
+    farmer = "farmer"
+    agent  = "agent"
+    admin  = "admin"
 
 
 class User(Base):
@@ -35,7 +35,7 @@ class User(Base):
     phone      = Column(String(15),  nullable=True)
     state      = Column(String(50),  nullable=True)
     district   = Column(String(50),  nullable=True)
-    role       = Column(Enum(UserRole), nullable=False, default=UserRole.FARMER)
+    role       = Column(Enum(UserRole), nullable=False, default=UserRole.farmer)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

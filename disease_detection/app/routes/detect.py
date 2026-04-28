@@ -7,6 +7,8 @@ from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
 from shared.database import get_db
 from shared.models.upload import Upload
+from shared.models.user import User
+from shared.models.farm import Farm
 from app.model.predictor import get_predictor
 from app.kafka_producer import publish_disease_event
 from app.config import get_dd_settings

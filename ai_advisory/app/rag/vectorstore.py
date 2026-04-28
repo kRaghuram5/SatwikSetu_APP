@@ -93,7 +93,6 @@ class FarmingVectorStore:
                 vector=embedding.tolist(),
                 payload={"content": doc, "metadata": meta}
             ))
-
         try:
             self.client.upsert(
                 collection_name=self.COLLECTION_NAME,

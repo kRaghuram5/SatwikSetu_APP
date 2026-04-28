@@ -138,6 +138,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-agentchiguru}:${POSTGRES_PASSWORD:-agentchiguru123}@postgres:5432/${POSTGRES_DB:-agentchiguru_db}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MODEL_PATH: /app/model/plant_disease_model.pth
     depends_on:
       postgres:
         condition: service_healthy
@@ -146,6 +147,7 @@ services:
     volumes:
       - ./shared:/app/shared
       - ./disease_detection/uploads:/app/uploads
+      - ./Disease/runs/disease_classifier/best_model.pt:/app/model/plant_disease_model.pth:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 10s

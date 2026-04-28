@@ -21,19 +21,19 @@ depends_on: Union[Sequence[str], None] = None
 def upgrade() -> None:
     # Create ENUM types - using DROP CASCADE to avoid conflicts
     op.execute("DROP TYPE IF EXISTS userrole CASCADE;")
-    op.execute("CREATE TYPE userrole AS ENUM ('FARMER', 'AGENT', 'ADMIN');")
+    op.execute("CREATE TYPE userrole AS ENUM ('farmer', 'agent', 'admin');")
     
     op.execute("DROP TYPE IF EXISTS growthstage CASCADE;")
-    op.execute("CREATE TYPE growthstage AS ENUM ('SEEDLING', 'VEGETATIVE', 'FLOWERING', 'FRUITING', 'MATURATION');")
+    op.execute("CREATE TYPE growthstage AS ENUM ('seedling', 'vegetative', 'flowering', 'fruiting', 'maturation');")
     
     op.execute("DROP TYPE IF EXISTS notificationtype CASCADE;")
-    op.execute("CREATE TYPE notificationtype AS ENUM ('DISEASE_ALERT', 'ADVISORY', 'PRICE_ALERT', 'IRRIGATION_REMINDER', 'SYSTEM_ALERT');")
+    op.execute("CREATE TYPE notificationtype AS ENUM ('disease_alert', 'advisory', 'price_alert', 'irrigation_reminder', 'system_alert');")
     
     op.execute("DROP TYPE IF EXISTS notificationchannel CASCADE;")
-    op.execute("CREATE TYPE notificationchannel AS ENUM ('EMAIL', 'SMS', 'IN_APP', 'PUSH');")
+    op.execute("CREATE TYPE notificationchannel AS ENUM ('email', 'sms', 'in_app', 'push');")
     
     op.execute("DROP TYPE IF EXISTS notificationstatus CASCADE;")
-    op.execute("CREATE TYPE notificationstatus AS ENUM ('PENDING', 'SENT', 'FAILED', 'READ');")
+    op.execute("CREATE TYPE notificationstatus AS ENUM ('pending', 'sent', 'failed', 'read');")
     
     # Create users table
     op.create_table('users',
@@ -44,7 +44,7 @@ def upgrade() -> None:
         sa.Column('phone', sa.String(length=15), nullable=True),
         sa.Column('state', sa.String(length=50), nullable=True),
         sa.Column('district', sa.String(length=50), nullable=True),
-        sa.Column('role', postgresql.ENUM('FARMER', 'AGENT', 'ADMIN', name='userrole', create_type=False), nullable=False, server_default='FARMER'),
+        sa.Column('role', postgresql.ENUM('farmer', 'agent', 'admin', name='userrole', create_type=False), nullable=False, server_default='farmer'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
         sa.Column('is_superuser', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('is_verified', sa.Boolean(), nullable=False, server_default='false'),
