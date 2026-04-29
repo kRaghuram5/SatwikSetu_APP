@@ -245,3 +245,128 @@ def get_irrigation_recommendation(
         "next_irrigation": next_irrigation.isoformat() + "Z",
         "tips": tips,
     }
+
+
+def get_weather_adjusted_irrigation(
+    base_recommendation: dict,
+    current_weather: dict,
+    forecast: dict,
+    crop: str,
+    growth_stage: str,
+) -> dict:
+    """
+    Adjust irrigation recommendation based on real-time weather and forecast.
+    
+    Factors considered:
+    - Current rainfall
+    - Forecast rainfall (next 5 days)
+    - Temperature extremes
+    - Humidity levels
+    - Wind speed
+    
+    Returns:
+        Enhanced irrigation plan with weather adjustments
+    """
+    adjustments = []
+    adjusted_water = base_recommendation["water_quantity_liters_per_hectare"]
+    urgency_override = base_recommendation["urgency"]
+    recommendation_override = base_recommendation["recommendation"]
+    
+    # Calculate forecast rainfall
+    forecast_list = forecast.get("forecast", [])
+    rainfall_5day = sum(day.get("total_rainfall_mm", 0) for day in forecast_list[:5])
+    
+    # Heavy rain expected
+    if rainfall_5day > 50:
+        adjustment_factor = 0.5  # Reduce irrigation by 50%
+        adjusted_water = int(base_recommendation["water_quantity_liters_per_hectare"] * 0.5)
+        urgency_override = "low"
+        recommendation_override = f"Heavy rainfall forecast ({rainfall_5day}mm). Reduce irrigation significantly."
+        adjustments.append({
+            "factor": "heavy_rain_forecast",
+            "reason": f"Heavy rainfall expected ({rainfall_5day}mm in 5 days)",
+            "adjustment": f"Reduce water by 50%",
+            "water_reduction": f"{int(base_recommendation['water_quantity_liters_per_hectare'] * 0.5)} L/ha"
+        })
+    
+    # Moderate rain expected
+    elif rainfall_5day > 20:
+        adjustment_factor = 0.75
+        adjusted_water = int(base_recommendation["water_quantity_liters_per_hectare"] * 0.75)
+        recommendation_override = f"Moderate rainfall forecast ({rainfall_5day}mm). Reduce irrigation."
+        adjustments.append({
+            "factor": "moderate_rain_forecast",
+            "reason": f"Moderate rainfall expected ({rainfall_5day}mm in 5 days)",
+            "adjustment": f"Reduce water by 25%",
+            "water_reduction": f"{int(base_recommendation['water_quantity_liters_per_hectare'] * 0.25)} L/ha"
+        })
+    
+    # No rain expected
+    elif rainfall_5day < 5:
+        adjusted_water = int(base_recommendation["water_quantity_liters_per_hectare"] * 1.2)
+        urgency_override = "high" if base_recommendation["urgency"] != "urgent" else "urgent"
+        recommendation_override = "Minimal rainfall forecast. Increase irrigation."
+        adjustments.append({
+            "factor": "drought_risk",
+            "reason": "No significant rainfall expected",
+            "adjustment": "Increase water by 20%",
+            "water_increase": f"{int(base_recommendation['water_quantity_liters_per_hectare'] * 0.2)} L/ha"
+        })
+    
+    # High temperature stress
+    avg_temp_5d = sum(day.get("avg_temp", 25) for day in forecast_list[:5]) / len(forecast_list[:5])
+    if avg_temp_5d > 35:
+        adjusted_water = int(adjusted_water * 1.15)
+        adjustments.append({
+            "factor": "high_temperature",
+            "reason": f"High temperature stress risk (avg {avg_temp_5d}°C)",
+            "adjustment": "Increase water by 15% for evaporation losses",
+            "timing": "Irrigate early morning or late evening"
+        })
+    
+    # Current humidity
+    current_humidity = current_weather.get("humidity", 60)
+    if current_humidity > 85:
+        adjustments.append({
+            "factor": "high_humidity",
+            "reason": "Current humidity very high",
+            "adjustment": "Reduce irrigation slightly to prevent fungal diseases",
+            "water_reduction": f"{int(adjusted_water * 0.1)} L/ha"
+        })
+        adjusted_water = int(adjusted_water * 0.9)
+    
+    # Wind speed
+    wind_speed = current_weather.get("wind_speed", 0)
+    if wind_speed > 15:
+        adjustments.append({
+            "factor": "high_wind",
+            "reason": f"High wind speed ({wind_speed} kmh) increases evaporation",
+            "adjustment": "Increase water by 10%",
+            "timing": "Avoid irrigation during high wind hours"
+        })
+        adjusted_water = int(adjusted_water * 1.1)
+    
+    # Current rainfall
+    current_rainfall = current_weather.get("rainfall_mm", 0)
+    if current_rainfall > 10:
+        adjustments.append({
+            "factor": "current_rain",
+            "reason": f"Current rainfall {current_rainfall}mm",
+            "adjustment": "Postpone irrigation for 24-48 hours",
+            "recommendation": "Monitor soil moisture before next irrigation"
+        })
+        urgency_override = "low"
+    
+    # Build adjusted recommendation
+    return {
+        "adjusted_water_quantity_liters_per_hectare": adjusted_water,
+        "adjustment_summary": recommendation_override,
+        "urgency_adjusted": urgency_override,
+        "adjustments": adjustments,
+        "forecast_rainfall_5day_mm": rainfall_5day,
+        "forecast_avg_temp_5day": round(avg_temp_5d, 1),
+        "current_humidity": current_humidity,
+        "current_wind_speed": wind_speed,
+        "current_rainfall_mm": current_rainfall,
+    }
+
