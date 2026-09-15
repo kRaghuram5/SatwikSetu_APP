@@ -19,25 +19,23 @@ An intelligent microservices platform that empowers farmers with AI-driven insig
 ---
 
 ## 🏗️ System Architecture
-
-```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Nginx Load Balancer (Port 80)            │
 └─────────────────────────────────────────────────────────────┘
                               │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-   ┌────▼────┐          ┌─────▼─────┐         ┌───▼─────┐
-   │ Gateway │          │ PostgreSQL │         │  Redis  │
-   │ (8000)  │          │ (Database) │         │ (Cache) │
-   └────┬────┘          └────────────┘         └─────────┘
+        ┌─────────────────────┼────────────────────┐
+        │                     │                    │
+   ┌────▼────┐          ┌─────▼─────┐          ┌───▼─────┐
+   │ Gateway │          │ PostgreSQL│          │  Redis  │
+   │ (8000)  │          │ (Database)│          │ (Cache) │
+   └────┬────┘          └───────────┘          └─────────┘
         │
-        ├──────────┬──────────┬──────────┬──────────┐
-        │          │          │          │          │
+        ├──────────┬─────────┬─────────┬───────── ┐
+        │          │         │         │          │
    ┌────▼──┐  ┌────▼──┐ ┌────▼──┐ ┌────▼──┐ ┌─────▼────┐
    │Disease│  │ AI    │ │Irriga-│ │Market │ │Notif-    │
-   │Detect │  │Advisor│ │tion   │ │Price  │ │ication   │
-   │ 8001 │  │ 8002 │ │ 8003 │ │ 8004 │ │ 8005    │
+   │Detect │  │Advisor│ │ tion  │ │Price  │ │ication   │
+   │ 8001  │  │ 8002  │ │ 8003  │ │ 8004  │ │ 8005     │
    └───────┘  └───┬───┘ └───────┘ └───────┘ └─────┬────┘
                   │                               │
               ┌───▼────────────────────────────────▼──┐
@@ -49,8 +47,6 @@ An intelligent microservices platform that empowers farmers with AI-driven insig
               │(Vector DB)│
               │ (6333)    │
               └───────────┘
-```
-
 ## 🛠️ Tech Stack
 
 | Layer | Technology |

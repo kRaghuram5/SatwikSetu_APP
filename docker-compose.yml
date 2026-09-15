@@ -121,7 +121,7 @@ services:
       - ./alembic.ini:/app/alembic.ini
       - ./gateway/uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -149,7 +149,7 @@ services:
       - ./disease_detection/uploads:/app/uploads
       - ./Disease/runs/disease_classifier/best_model.pt:/app/model/plant_disease_model.pth:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -178,7 +178,7 @@ services:
     volumes:
       - ./shared:/app/shared
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -203,7 +203,7 @@ services:
     volumes:
       - ./shared:/app/shared
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -228,7 +228,7 @@ services:
     volumes:
       - ./shared:/app/shared
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -253,7 +253,7 @@ services:
     volumes:
       - ./shared:/app/shared
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -276,7 +276,7 @@ services:
     volumes:
       - ./shared:/app/shared
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8006/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
